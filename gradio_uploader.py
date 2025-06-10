@@ -3,7 +3,6 @@ from datetime import date
 from uploader_utils import toggle_visibility, upload, default_thumbnail_path, default_data_path
 
 
-
 with gr.Blocks() as demo:
 
     # Webpage Title

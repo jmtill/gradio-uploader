@@ -1,7 +1,36 @@
+from idlelib.browser import file_open
+
 import gradio as gr
 from pathlib import Path
 import requests
+import json
+from logging import getLogger, StreamHandler, Formatter, DEBUG
+from logging.handlers import RotatingFileHandler
 
+logger = getLogger(__name__)
+
+root = Path(__file__).resolve().parent
+log_path = root / "logs" / "uploader.log"
+log_path.parent.mkdir(parents=True, exist_ok=True)
+
+file_handler = RotatingFileHandler(
+    log_path,
+    maxBytes=2_000_000,
+    backupCount=5,
+    encoding="utf-8"
+)
+file_handler.formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                                      datefmt="%Y-%m-%d %H:%M:%S")
+
+if not logger.hasHandlers():
+    logger.formatter = Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                                         datefmt='%m/%d/%Y %I:%M:%S %p')
+
+    logger.addHandler(StreamHandler())
+    logger.addHandler(file_handler)
+    logger.setLevel(DEBUG)
+
+logger.info(msg="Logger is set up.")
 
 
 IP_ADDRESS = "127.0.0.1:8000"
@@ -11,7 +40,7 @@ TEST: bool = True
 if TEST:
     address: str = f"http://{TEST_IP}/savedata/"
 else:
-    address: str = f"http://{IP_ADDRESS}/savedata"
+    address: str = f"http://{IP_ADDRESS}/savedata/"
 
 
 default_data_path: Path = Path(r'C:/') / 'Users' / 'avriza' / 'Desktop' / 'pyscicat'
@@ -59,9 +88,17 @@ def upload(name: str,
 
     if data_save_path is None:
         data_save_path: Path = default_data_path
+        logger.info(f"Default data path is used: {data_save_path}")
+
+    else:
+        logger.info(f"Custom data file path is used: {data_save_path}")
 
     if thumbnail_save_path is None:
         thumbnail_save_path: Path = default_thumbnail_path
+        logger.info(f"Default thumbnail path is used: {data_save_path}")
+    else:
+        logger.info(f"Custom data thumbnail path is used: {data_save_path}")
+
 
     metadata = {
         "name": name,
@@ -73,35 +110,42 @@ def upload(name: str,
         "thumbnail_path": thumbnail_save_path,
     }
 
-    print(metadata)
-
     if thumbnail_file is None:
         files = {
             # data file
-            "data": (
+            "data_file": (
                 Path(f"{data_file}").name,
                 open(f"{data_file}", "rb"),
                 "application/json"  # MIME type for JSON files
             )
         }
 
+        logger.info("No thumbnail was provided.")
+
     else:
         files = {
-            # PNG image
-            "thumbnail": (
+            # image
+            "thumbnail_file": (
                 Path(f"{thumbnail_file}").name,  # filename the server will see
                 open(f"{thumbnail_file}", "rb"),  # file handle (binary mode!)
                 "image/png"  # MIME type
             ),
 
             # Data file
-            "data": (
+            "data_file": (
                 Path(f"{data_file}").name,
                 open(f"{data_file}", "rb"), # file handle (binary mode!)
                 "application/json"  # MIME type for JSON files
             )
         }
 
-    r = requests.post(url=address, json=metadata, files=files)
+    # r = requests.post(url=address, json=metadata, files=files)
+    r = requests.post(url=address, data= {'metadata': json.dumps(metadata)}, files=files)
     r.raise_for_status()
-    return f"Status: {r.status_code}"
+
+    if r.status_code == requests.codes.ok:
+        logger.info(f"File uploaded! :)\n {r.status_code}")
+        return f"File uploaded! :)\n Status code: {r.status_code}"
+    else:
+        logger.error(f"Could not upload files! :(\n Status code: {r.status_code}")
+        return f"Could not upload files! :(\n Status code: {r.status_code}"

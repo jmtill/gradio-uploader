@@ -1,0 +1,8 @@
+# IDEs
+.idea
+.vscode
+.log
+
+# Distribution / packaging
+logs
+.Python
