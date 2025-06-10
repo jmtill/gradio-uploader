@@ -1,8 +1,15 @@
 # IDEs
 .idea
+.idea/
 .vscode
 .log
 
 # Distribution / packaging
-logs
+#logs
+#.Python
+logs/
 .Python
+
+# Local runtime
+.gradio/
+__pycache__/

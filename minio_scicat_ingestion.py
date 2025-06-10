@@ -184,7 +184,7 @@ if __name__ == "__main__":
     
     if os.path.exists(FILE_PATH) and (FILE_PATH.endswith(".csv") or FILE_PATH.endswith(".json")):
         file_url = upload_to_minio(FILE_PATH)
-        register_in_scicat(FILE_PATH, file_url)
+        register_in_scicat(FILE_PATH, file_url, THUMBNAIL_PATH)
         print(f"File {FILE_PATH} successfully ingested into MinIO and SciCat.")
     else:
         print("Invalid file path or unsupported file format. Please provide a valid JSON/CSV file.")

@@ -1,5 +1,3 @@
-from idlelib.browser import file_open
-
 import gradio as gr
 from pathlib import Path
 import requests
@@ -95,9 +93,9 @@ def upload(name: str,
 
     if thumbnail_save_path is None:
         thumbnail_save_path: Path = default_thumbnail_path
-        logger.info(f"Default thumbnail path is used: {data_save_path}")
+        logger.info(f"Default thumbnail path is used: {thumbnail_save_path}")
     else:
-        logger.info(f"Custom data thumbnail path is used: {data_save_path}")
+        logger.info(f"Custom data thumbnail path is used: {thumbnail_save_path}")
 
 
     metadata = {

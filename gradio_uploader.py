@@ -62,7 +62,6 @@ with gr.Blocks() as demo:
         outputs=output,
     )
 
-demo.launch()
 
 if __name__ == "__main__":
     demo.launch()
